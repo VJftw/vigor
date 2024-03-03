@@ -1,0 +1,37 @@
+name: PR
+
+on:
+  push: {}
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - name: Go Build
+        env:
+          GOOS: js
+          GOARCH: wasm
+        run: go build ./...
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - name: Go Test
+        # TODO: extract syscall/js calls into a mockable interface in `./html` pkg.
+        run: go test -cover -v .
