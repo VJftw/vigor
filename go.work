@@ -1,0 +1,9 @@
+go 1.22.0
+
+use (
+	.
+	./examples/features
+	./html/tests
+	./tests
+	./web/tests
+)

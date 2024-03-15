@@ -7,11 +7,11 @@ import (
 )
 
 type nodeFor struct {
-	fn func(v any) Node
+	fn func(i int, v any) Node
 	v  vigor.GetterFn
 }
 
-func For(v vigor.GetterFn, fn func(v any) Node) Node {
+func For(v vigor.GetterFn, fn func(i int, v any) Node) Node {
 	return &nodeFor{
 		fn: fn,
 		v:  v,
@@ -26,7 +26,7 @@ func (n *nodeFor) DOMObject(doc js.Value) js.Value {
 		items := n.v(subscriber).([]any)
 		itemObjs := make([]any, len(items))
 		for i, item := range items {
-			itemObjs[i] = n.fn(item).DOMObject(doc)
+			itemObjs[i] = n.fn(i, item).DOMObject(doc)
 		}
 
 		obj.Call("replaceChildren", itemObjs...)

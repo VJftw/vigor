@@ -1,32 +1,74 @@
 package html
 
 import (
+	"fmt"
 	"syscall/js"
 
 	"github.com/VJftw/vigor"
 )
 
 type nodeText struct {
-	text any
+	texts []any
 }
 
-func Text(text any) Node {
+func Text(texts ...any) Node {
 	return &nodeText{
-		text: text,
+		texts: texts,
 	}
 }
 
 func (n *nodeText) DOMObject(doc js.Value) js.Value {
 	obj := doc.Call("createTextNode", "")
+	hasGetterFn := false
+	for _, text := range n.texts {
+		if _, ok := text.(vigor.GetterFn); ok {
+			hasGetterFn = true
+			break
+		}
+		if _, ok := text.(*subscribedText); ok {
+			hasGetterFn = true
+			break
+		}
+	}
 
-	if x, ok := n.text.(vigor.GetterFn); ok {
+	if hasGetterFn {
 		subscriber := vigor.NewFnSubscriber()
 		subscriber.SetFn(func() {
-			obj.Set("textContent", x(subscriber))
+			content := ""
+			for _, text := range n.texts {
+				if dep, ok := text.(*subscribedText); ok {
+					text = dep.fn(subscriber)
+				}
+
+				if getter, ok := text.(vigor.GetterFn); ok {
+					text = getter(subscriber)
+				}
+
+				content += fmt.Sprintf("%v", text)
+			}
+
+			obj.Set("textContent", content)
 		}).Run()
 	} else {
-		obj.Set("textContent", n.text)
+		content := ""
+		for _, text := range n.texts {
+			content += fmt.Sprintf("%v", text)
+		}
+
+		obj.Set("textContent", content)
 	}
 
 	return obj
+}
+
+type SubscribedTextFunc func(vigor.Subscriber) any
+
+type subscribedText struct {
+	fn SubscribedTextFunc
+}
+
+func SubscribedText(fn SubscribedTextFunc) *subscribedText {
+	return &subscribedText{
+		fn: fn,
+	}
 }
