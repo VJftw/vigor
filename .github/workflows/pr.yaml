@@ -27,11 +27,32 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - name: Install chrome
+        uses: browser-actions/setup-chrome@latest
+
+      - name: Go Test
+        run: make -C tests test
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage
+          path: tests/.coverage/coverage.html
+
+  features:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
       - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v5
         with:
           go-version: "stable"
 
       - name: Go Test
-        # TODO: extract syscall/js calls into a mockable interface in `./html` pkg.
-        run: go test -cover -v .
+        run: make -C examples/features test
