@@ -26,6 +26,11 @@ func RenderTo(ctx context.Context, document js.Value, n html.Node, rootEl js.Val
 		rootEl.Call("replaceChildren", thisEl)
 	}
 
+	infoObj := document.Call("createElement", "vigor-info")
+	infoObj.Set("id", "vigor-info")
+	infoObj.Set("hidden", true)
+	document.Get("body").Call("append", infoObj)
+
 	<-ctx.Done()
 
 	return ctx.Err()

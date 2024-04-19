@@ -15,12 +15,9 @@ func TestApp(t *testing.T) {
 	s := httptest.NewServer(fs)
 	defer s.Close()
 
-	page := rod.New().MustConnect().
-		Timeout(10 * time.Second).
-		Logger(rod.DefaultLogger).
-		MustPage(s.URL)
+	page := rod.New().MustConnect().Timeout(10 * time.Second).Logger(rod.DefaultLogger).MustPage(s.URL)
 	defer page.MustClose()
-	page.MustWaitStable()
+	page.Race().Element("#vigor-info").MustDo()
 
 	appEl := page.MustElement("#app")
 
@@ -34,7 +31,7 @@ func TestApp(t *testing.T) {
 	buttonEl := page.MustElement("button")
 
 	buttonEl.MustClick()
-	page.MustWaitStable()
+
 	appHTML = appEl.MustHTML()
 	assert.Equal(t,
 		`<div id="app"><div><vigor-show><button>Log out</button></vigor-show></div></div>`,

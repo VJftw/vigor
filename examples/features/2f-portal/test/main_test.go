@@ -15,13 +15,10 @@ func TestApp(t *testing.T) {
 	s := httptest.NewServer(fs)
 	defer s.Close()
 
-	page := rod.New().MustConnect().
-		Timeout(10 * time.Second).
-		Logger(rod.DefaultLogger).
-		MustPage(s.URL)
+	page := rod.New().MustConnect().Timeout(10 * time.Second).Logger(rod.DefaultLogger).MustPage(s.URL)
 	defer page.MustClose()
-	page.MustWaitLoad()
-	page.MustSetWindow(0, 0, 1920, 1080)
+	page.Race().Element("#vigor-info").MustDo()
+	page.MustSetWindow(0, 0, 640, 480)
 
 	appEl := page.MustElement("#app")
 	appHTML := appEl.MustHTML()

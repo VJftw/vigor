@@ -18,7 +18,7 @@ func TestApp(t *testing.T) {
 
 	page := rod.New().MustConnect().Timeout(10 * time.Second).Logger(rod.DefaultLogger).MustPage(s.URL)
 	defer page.MustClose()
-	page.MustWaitLoad()
+	page.Race().Element("#vigor-info").MustDo()
 
 	appEl := page.MustElement("#app")
 
