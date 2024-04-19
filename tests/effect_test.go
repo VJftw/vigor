@@ -1,4 +1,4 @@
-package vigor_test
+package tests
 
 import (
 	"testing"

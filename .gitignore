@@ -1,4 +1,6 @@
 *.wasm
 *.js
-build/
+build
 .bin
+*.html
+.coverage
