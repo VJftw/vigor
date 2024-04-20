@@ -24,7 +24,7 @@ func TestApp(t *testing.T) {
 	appHTML := appEl.MustHTML()
 
 	assert.Equal(t,
-		`<div id="app"><div><vigor-show><button>Log in</button></vigor-show></div></div>`,
+		`<div id="app"><div><button>Log in</button></div></div>`,
 		appHTML,
 	)
 
@@ -34,7 +34,7 @@ func TestApp(t *testing.T) {
 
 	appHTML = appEl.MustHTML()
 	assert.Equal(t,
-		`<div id="app"><div><vigor-show><button>Log out</button></vigor-show></div></div>`,
+		`<div id="app"><div><button>Log out</button></div></div>`,
 		appHTML,
 	)
 }

@@ -8,10 +8,10 @@ import (
 
 type nodeFor struct {
 	fn func(i int, v any) Node
-	v  vigor.GetterFn
+	v  any
 }
 
-func For(v vigor.GetterFn, fn func(i int, v any) Node) Node {
+func For(v any, fn func(i int, v any) Node) Node {
 	return &nodeFor{
 		fn: fn,
 		v:  v,
@@ -19,17 +19,36 @@ func For(v vigor.GetterFn, fn func(i int, v any) Node) Node {
 }
 
 func (n *nodeFor) DOMObject(doc js.Value) js.Value {
-	obj := doc.Call("createElement", "vigor-for")
+	obj := doc.Call("createDocumentFragment")
+
+	currentItemObjs := []any{}
 
 	subscriber := vigor.NewFnSubscriber()
 	subscriber.SetFn(func() {
-		items := n.v(subscriber).([]any)
-		itemObjs := make([]any, len(items))
-		for i, item := range items {
-			itemObjs[i] = n.fn(i, item).DOMObject(doc)
+		items := []any{}
+		if getterFn, ok := n.v.(vigor.GetterFn); ok {
+			items = getterFn(subscriber).([]any)
+		} else {
+			items = n.v.([]any)
 		}
 
-		obj.Call("replaceChildren", itemObjs...)
+		newItemObjs := make([]any, len(items))
+		for i, item := range items {
+			newItemObjs[i] = n.fn(i, item).DOMObject(doc)
+		}
+
+		if len(currentItemObjs) < 1 {
+			obj.Call("replaceChildren", newItemObjs...)
+		} else {
+			for _, newItemObj := range newItemObjs {
+				currentItemObjs[len(currentItemObjs)-1].(js.Value).Call("insertBefore", newItemObj)
+			}
+			for _, currentItemObj := range currentItemObjs {
+				currentItemObj.(js.Value).Call("remove")
+			}
+		}
+
+		currentItemObjs = newItemObjs
 	}).Run()
 
 	return obj

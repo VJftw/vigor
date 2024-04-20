@@ -23,7 +23,7 @@ func TestApp(t *testing.T) {
 
 	appHTML := appEl.MustHTML()
 	assert.Equal(t,
-		`<div id="app"><ul><vigor-for><li><a target="_blank" href="https://www.youtube.com/watch?v=J---aiyznGQ">1: Keyboard Cat</a></li><li><a target="_blank" href="https://www.youtube.com/watch?v=z_AbfPXTKms">2: Maru</a></li><li><a target="_blank" href="https://www.youtube.com/watch?v=OUtn3pvWmpg">3: Henri The Existential Cat</a></li></vigor-for></ul></div>`,
+		`<div id="app"><ul><li><a target="_blank" href="https://www.youtube.com/watch?v=J---aiyznGQ">1: Keyboard Cat</a></li><li><a target="_blank" href="https://www.youtube.com/watch?v=z_AbfPXTKms">2: Maru</a></li><li><a target="_blank" href="https://www.youtube.com/watch?v=OUtn3pvWmpg">3: Henri The Existential Cat</a></li></ul></div>`,
 		appHTML,
 	)
 }

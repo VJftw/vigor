@@ -32,6 +32,7 @@ func El(name string, children ...any) Node {
 		name:   name,
 		events: map[string][]JSEventFunc{},
 		plugins: map[ElementPlugin]struct{}{
+			NewPropertyElementPlugin():  {},
 			NewAttributeElementPlugin(): {},
 			NewClassElementPlugin():     {},
 			NewChildrenElementPlugin():  {},

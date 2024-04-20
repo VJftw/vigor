@@ -20,7 +20,7 @@ func Index(v vigor.GetterFn, fn func(i int, v any) Node) Node {
 }
 
 func (n *nodeIndex) DOMObject(doc js.Value) js.Value {
-	obj := doc.Call("createElement", "vigor-index")
+	obj := doc.Call("createDocumentFragment")
 
 	currentItems := []any{}
 	currentItemObjs := []js.Value{}

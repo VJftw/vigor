@@ -24,7 +24,7 @@ func TestApp(t *testing.T) {
 	appHTML := appEl.MustHTML()
 
 	assert.Equal(t,
-		`<div id="app"><vigor-switch><p>7 is between 5 and 10</p></vigor-switch></div>`,
+		`<div id="app"><p>7 is between 5 and 10</p></div>`,
 		appHTML,
 	)
 }
