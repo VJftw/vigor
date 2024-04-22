@@ -26,15 +26,12 @@ func (p *ChildrenElementPlugin) HandleChild(child any) (bool, error) {
 		uint, uint8, uint16, uint32, uint64, uintptr,
 		float32, float64,
 		complex64, complex128:
-		p.children = append(p.children, x)
-
 		// Allow primitive types shorthand to render a Text Node.
-		// autoTextNodeChildren = append(autoTextNodeChildren, x)
-	case vigor.GetterFn:
 		p.children = append(p.children, x)
 
+	case vigor.GetterFn:
 		// Allow getter to be passed shorthand to render a Text node.
-		// autoTextNodeChildren = append(autoTextNodeChildren, x)
+		p.children = append(p.children, x)
 
 	default:
 		return false, nil
