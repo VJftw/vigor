@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 /*
 Signals are the cornerstone of reactivity in Vigor. They contain values that
 change over time; when you change a signal's value, it automatically updates

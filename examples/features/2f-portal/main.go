@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 /*
 Sometimes it's beneficial to insert elements outside the normal flow of the app.
 Z-indexes are sometimes insufficient to deal with render contexts for floating

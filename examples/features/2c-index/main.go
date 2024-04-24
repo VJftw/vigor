@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 /*
 You now know how to render lists in Solid with <For>, but Solid also provides the <Index> component, which will cause less rerenders in certain situations.
 

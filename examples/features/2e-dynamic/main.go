@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 /*
 The <Dynamic> tag is useful when you render from data. It lets you pass either a string for a native element or a component function and it will render that with the rest of the provided props.
 

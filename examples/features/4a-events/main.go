@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 /*
 Events in Solid are attributes prefixed with on. They are treated specially in a
 few ways. First, they do not follow the normal heuristics for wrapping. In many

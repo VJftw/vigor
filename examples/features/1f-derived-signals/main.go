@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 /*
 We've seen that whenever we access a signal in JSX, it will automatically update
 the view when that signal changes. But the component function itself only

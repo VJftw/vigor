@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 /*
 Sometimes you need to deal with conditionals with more than 2 mutual exclusive
 outcomes. For this case, we have the <Switch> and <Match> components modeled

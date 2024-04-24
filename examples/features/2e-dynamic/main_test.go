@@ -1,40 +1,42 @@
-package main
+package main_test
 
 import (
-	"net/http"
-	"net/http/httptest"
 	"testing"
-	"time"
 
-	"github.com/go-rod/rod"
+	"github.com/VJftw/vigor/examples/features"
+	"github.com/chromedp/chromedp"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestApp(t *testing.T) {
-	fs := http.FileServer(http.Dir("../build"))
-	s := httptest.NewServer(fs)
-	defer s.Close()
+func Test2eDynamic(t *testing.T) {
+	page := features.BuildServeAndGetVigorPage(t)
 
-	page := rod.New().MustConnect().Timeout(10 * time.Second).Logger(rod.DefaultLogger).MustPage(s.URL)
-	defer page.MustClose()
-	page.Race().Element("#vigor-info").MustDo()
-
-	appEl := page.MustElement("#app")
+	var appElHtml string
+	require.NoError(t, chromedp.Run(page,
+		chromedp.OuterHTML("#app", &appElHtml),
+	))
 
 	assert.Equal(t,
 		`<div id="app"><div><select><option value="red">red</option><option value="green">green</option><option value="blue">blue</option></select><strong style="color: red;">Red Thing</strong></div></div>`,
-		appEl.MustHTML(),
+		appElHtml,
 	)
 
-	page.MustElement("select").MustSelect("green")
+	require.NoError(t, chromedp.Run(page,
+		chromedp.SetValue(`select`, "green", chromedp.ByQuery),
+		chromedp.OuterHTML("#app", &appElHtml),
+	))
 	assert.Equal(t,
 		`<div id="app"><div><select><option value="red">red</option><option value="green">green</option><option value="blue">blue</option></select><strong style="color: green;">Green Thing</strong></div></div>`,
-		appEl.MustHTML(),
+		appElHtml,
 	)
 
-	page.MustElement("select").MustSelect("blue")
+	require.NoError(t, chromedp.Run(page,
+		chromedp.SetValue(`select`, "blue", chromedp.ByQuery),
+		chromedp.OuterHTML("#app", &appElHtml),
+	))
 	assert.Equal(t,
 		`<div id="app"><div><select><option value="red">red</option><option value="green">green</option><option value="blue">blue</option></select><strong style="color: blue;">Blue Thing</strong></div></div>`,
-		appEl.MustHTML(),
+		appElHtml,
 	)
 }

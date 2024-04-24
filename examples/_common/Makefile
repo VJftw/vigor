@@ -1,6 +1,6 @@
 MAKEFILE_DIR:=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 
-.PHONY: build serve test
+.PHONY: build serve
 
 build:
 	@rm -rf $@
@@ -8,9 +8,6 @@ build:
 	@cp $(dir $(shell go env GOWORK))/examples/_common/index.html $@/index.html
 	@cp $(shell go env GOROOT)/misc/wasm/wasm_exec.js $@/wasm_exec.js
 	@GOARCH=wasm GOOS=js go build -o $@/main.wasm
-
-test: build
-	go test -v ./test/.
 
 serve: build
 	go run github.com/m3ng9i/ran@v0.1.6 \

@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 /*
 Components are just functions like the above `HelloWorld()`. We can also nest
 them like so.

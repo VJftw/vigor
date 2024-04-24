@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 /*
 JSX allows you to use JavaScript to control the logic flow in the templates.
 However, without a Virtual DOM, using things like Array.prototype.map would

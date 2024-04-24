@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 /*
 Signals are trackable values, but they are only one half of the equation. To
 complement those are observers that can be updated by those trackable values. An

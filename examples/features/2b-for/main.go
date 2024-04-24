@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 /*
 The <For> component is the best way to loop over an array of objects. As the
 array changes, <For> updates or moves items in the DOM rather than recreating

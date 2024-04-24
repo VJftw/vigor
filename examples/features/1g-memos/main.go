@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 /*
 Most of the time, composing derived signals is sufficient. However, it is
 sometimes beneficial to cache values in order to reduce duplicated work. We can

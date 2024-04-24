@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 /*
 Go's closest alternative to JSX right now is through the use of the
 variadic (`...`) argument to functions. [margudk/gomponents](https://github.com/maragudk/gomponents)

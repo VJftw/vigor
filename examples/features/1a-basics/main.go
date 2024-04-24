@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 /*
 Just like in SolidJS, a Vigor App is composed of functions that we call
 components. The entry point for Vigor App is the `web.RenderTo()` and
