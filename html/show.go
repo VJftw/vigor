@@ -25,15 +25,26 @@ func Show(
 }
 
 func (n *nodeShow) DOMObject(doc js.Value) js.Value {
-	obj := doc.Call("createElement", "vigor-show")
+	obj := doc.Call("createDocumentFragment")
+	fragmentRendered := false
 
 	subscriber := vigor.NewFnSubscriber()
 	subscriber.SetFn(func() {
-		if n.when(subscriber) == true {
-			obj.Call("replaceChildren", n.truthy.DOMObject(doc))
+		var newObj js.Value
+		if n.when(subscriber).(bool) {
+			newObj = n.truthy.DOMObject(doc)
 		} else {
-			obj.Call("replaceChildren", n.falsey.DOMObject(doc))
+			newObj = n.falsey.DOMObject(doc)
 		}
+
+		if !fragmentRendered {
+			obj.Call("replaceChildren", newObj)
+			fragmentRendered = true
+		} else {
+			obj.Call("replaceWith", newObj)
+		}
+
+		obj = newObj
 	}).Run()
 
 	return obj

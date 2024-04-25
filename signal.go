@@ -74,3 +74,12 @@ func (l *fnSubscriber) SetFn(fn func()) *fnSubscriber {
 func (l *fnSubscriber) Run() {
 	l.fn()
 }
+
+// NewDerivedSignal creates a *Derived Signal* which allows you wrap a signal
+// with an expression that is updated when the upstream is. This acts like a
+// Signal but does not store any state.
+func NewDerivedSignal(upstream GetterFn, fn func(v any) any) GetterFn {
+	return func(s ...Subscriber) any {
+		return fn(upstream(s...))
+	}
+}

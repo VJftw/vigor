@@ -19,18 +19,34 @@ func Switch(defaultNode Node, cases ...*switchCase) Node {
 }
 
 func (n *nodeSwitch) DOMObject(doc js.Value) js.Value {
-	obj := doc.Call("createElement", "vigor-switch")
+	obj := doc.Call("createDocumentFragment")
+	fragmentRendered := false
 
 	subscriber := vigor.NewFnSubscriber()
 	subscriber.SetFn(func() {
+		var newObj js.Value
+
+		caseMatched := false
 		for _, c := range n.cases {
 			if c.when() {
-				obj.Call("replaceChildren", c.node.DOMObject(doc))
-				return
+				newObj = c.node.DOMObject(doc)
+				caseMatched = true
+				break
 			}
 		}
 
-		obj.Call("replaceChildren", n.defaultNode.DOMObject(doc))
+		if !caseMatched {
+			newObj = n.defaultNode.DOMObject(doc)
+		}
+
+		if !fragmentRendered {
+			obj.Call("replaceChildren", newObj)
+			fragmentRendered = true
+		} else {
+			obj.Call("replaceWith", newObj)
+		}
+
+		obj = newObj
 	}).Run()
 
 	for _, c := range n.cases {
