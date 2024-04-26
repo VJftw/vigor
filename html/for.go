@@ -22,6 +22,7 @@ func (n *nodeFor) DOMObject(doc js.Value) js.Value {
 	obj := doc.Call("createDocumentFragment")
 
 	currentItemObjs := []any{}
+	isVigorEmpty := false
 
 	subscriber := vigor.NewFnSubscriber()
 	subscriber.SetFn(func() {
@@ -37,18 +38,42 @@ func (n *nodeFor) DOMObject(doc js.Value) js.Value {
 			newItemObjs[i] = n.fn(i, item).DOMObject(doc)
 		}
 
-		if len(currentItemObjs) < 1 {
-			obj.Call("replaceChildren", newItemObjs...)
-		} else {
-			for _, newItemObj := range newItemObjs {
-				currentItemObjs[len(currentItemObjs)-1].(js.Value).Call("insertBefore", newItemObj)
+		defer func() {
+			currentItemObjs = newItemObjs
+		}()
+
+		if len(newItemObjs) < 1 {
+			if !isVigorEmpty {
+				placeholderObj := doc.Call("createElement", "vigor-empty")
+				obj.Call("replaceChildren", placeholderObj)
+				obj = placeholderObj
+				isVigorEmpty = true
 			}
-			for _, currentItemObj := range currentItemObjs {
-				currentItemObj.(js.Value).Call("remove")
-			}
+
+			return
 		}
 
-		currentItemObjs = newItemObjs
+		if len(currentItemObjs) < 1 {
+			// empty before, so placeholder or fragment is obj.
+			if isVigorEmpty {
+				fragmentObj := doc.Call("createDocumentFragment")
+				fragmentObj.Call("replaceChildren", newItemObjs...)
+				obj.Call("replaceWith", fragmentObj)
+				obj = fragmentObj
+				isVigorEmpty = false
+			} else {
+				obj.Call("replaceChildren", newItemObjs...)
+			}
+
+			return
+		}
+
+		for _, newItemObj := range newItemObjs {
+			currentItemObjs[len(currentItemObjs)-1].(js.Value).Call("insertAdjacentElement", "beforebegin", newItemObj)
+		}
+		for _, currentItemObj := range currentItemObjs {
+			currentItemObj.(js.Value).Call("remove")
+		}
 	}).Run()
 
 	return obj

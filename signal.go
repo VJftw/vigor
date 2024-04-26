@@ -39,6 +39,16 @@ func CreateSignal(value any) (GetterFn, SetterFn) {
 			return
 		}
 
+		// convert all slices to []any
+		if reflect.TypeOf(nextValue).Kind() == reflect.Slice {
+			sliceVal := reflect.ValueOf(nextValue)
+			newNextValue := make([]any, sliceVal.Len())
+			for i := 0; i < sliceVal.Len(); i++ {
+				newNextValue[i] = sliceVal.Index(i).Interface()
+			}
+			nextValue = newNextValue
+		}
+
 		value = nextValue
 
 		for s := range subscribers {
