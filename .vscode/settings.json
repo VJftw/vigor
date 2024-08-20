@@ -23,4 +23,8 @@
   "go.useLanguageServer": true,
   "go.lintOnSave": "off",
   "go.vetOnSave": "off",
+  "go.testEnvVars": {
+    "GOOS": "js",
+    "GOARCH": "wasm"
+  },
 }

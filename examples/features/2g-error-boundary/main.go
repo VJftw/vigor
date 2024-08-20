@@ -16,7 +16,7 @@ import (
 )
 
 func Broken() html.Node {
-	return html.NewNode(func(v js.Value) js.Value {
+	return html.NewNode(func(ctx context.Context, v js.Value) js.Value {
 		panic("Oh No")
 	})
 }
@@ -35,10 +35,10 @@ func App() html.Node {
 }
 
 func main() {
-	if err := web.RenderToElementID(
-		context.Background(),
+	ctx := context.Background()
+	web.RenderToElementID(ctx,
 		App(), "app",
-	); err != nil {
-		panic(err)
-	}
+	)
+
+	<-ctx.Done()
 }

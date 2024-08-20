@@ -14,29 +14,29 @@ func Test_2A_Show(t *testing.T) {
 
 	var appElHtml string
 	require.NoError(t, chromedp.Run(page,
-		chromedp.OuterHTML("#app", &appElHtml),
+		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 
 	assert.Equal(t,
-		`<div id="app"><div><button>Log in</button></div></div>`,
+		`<div><button>Log in</button></div>`,
 		appElHtml,
 	)
 
 	require.NoError(t, chromedp.Run(page,
 		chromedp.Click("button"),
-		chromedp.OuterHTML("#app", &appElHtml),
+		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 	assert.Equal(t,
-		`<div id="app"><div><button>Log out</button></div></div>`,
+		`<div><button>Log out</button></div>`,
 		appElHtml,
 	)
 
 	require.NoError(t, chromedp.Run(page,
 		chromedp.Click("button"),
-		chromedp.OuterHTML("#app", &appElHtml),
+		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 	assert.Equal(t,
-		`<div id="app"><div><button>Log in</button></div></div>`,
+		`<div><button>Log in</button></div>`,
 		appElHtml,
 	)
 }

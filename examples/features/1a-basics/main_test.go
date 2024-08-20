@@ -14,8 +14,8 @@ func Test1aBasics(t *testing.T) {
 
 	var appElHtml string
 	require.NoError(t, chromedp.Run(page,
-		chromedp.OuterHTML("#app", &appElHtml),
+		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 
-	assert.Equal(t, `<div id="app"><div>Hello Solid World!</div></div>`, appElHtml)
+	assert.Equal(t, `<div>Hello Solid World!</div>`, appElHtml)
 }

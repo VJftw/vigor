@@ -1,6 +1,9 @@
 package html
 
-import "syscall/js"
+import (
+	"context"
+	"syscall/js"
+)
 
 type nodePortal struct {
 	node Node
@@ -12,12 +15,12 @@ func Portal(node Node) Node {
 	}
 }
 
-func (n *nodePortal) DOMObject(doc js.Value) js.Value {
+func (n *nodePortal) DOMObject(ctx context.Context, doc js.Value) js.Value {
 	rootPortal := doc.Call("getElementById", "vigor-portal-root")
 	thisPortalObj := doc.Call("createElement", "vigor-portal")
 	rootPortal.Call("append", thisPortalObj)
 
-	thisPortalObj.Call("replaceChildren", n.node.DOMObject(doc))
+	thisPortalObj.Call("replaceChildren", n.node.DOMObject(ctx, doc))
 
 	return js.Undefined()
 }

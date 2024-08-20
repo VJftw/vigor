@@ -1,13 +1,13 @@
-package tests
+package web_test
 
 import (
 	"context"
 	"syscall/js"
 	"testing"
-	"time"
 
 	"github.com/VJftw/vigor/html"
 	"github.com/VJftw/vigor/web"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRenderToElementID(t *testing.T) {
@@ -18,10 +18,7 @@ func TestRenderToElementID(t *testing.T) {
 	divObj.Set("id", "app")
 	document.Get("body").Call("append", divObj)
 
-	ctx, cancel := context.WithCancel(context.TODO())
-	go func() {
-		<-time.After(1 * time.Second)
-		cancel()
-	}()
-	web.RenderToElementID(ctx, node, "app")
+	web.RenderToElementID(context.TODO(), node, "app")
+
+	assert.Equal(t, `<vigor-main id="vigor-main"><p>Hello World!</p></vigor-main><vigor-portal-root id="vigor-portal-root"></vigor-portal-root><vigor-info id="vigor-info" hidden=""></vigor-info>`, divObj.Get("innerHTML").String())
 }

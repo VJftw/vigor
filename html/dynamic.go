@@ -1,6 +1,7 @@
 package html
 
 import (
+	"context"
 	"syscall/js"
 
 	"github.com/VJftw/vigor"
@@ -16,13 +17,13 @@ func Dynamic(fn func(vigor.Subscriber) Node) Node {
 	}
 }
 
-func (n *nodeDynamic) DOMObject(doc js.Value) js.Value {
+func (n *nodeDynamic) DOMObject(ctx context.Context, doc js.Value) js.Value {
 	obj := doc.Call("createDocumentFragment")
 	fragmentRendered := false
 
 	subscriber := vigor.NewFnSubscriber()
 	subscriber.SetFn(func() {
-		newObj := n.fnThatReturnsNode(subscriber).DOMObject(doc)
+		newObj := n.fnThatReturnsNode(subscriber).DOMObject(ctx, doc)
 
 		if !fragmentRendered {
 			obj.Call("replaceChildren", newObj)

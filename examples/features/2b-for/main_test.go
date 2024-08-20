@@ -14,11 +14,11 @@ func Test_2B_For(t *testing.T) {
 
 	var appElHtml string
 	require.NoError(t, chromedp.Run(page,
-		chromedp.OuterHTML("#app", &appElHtml),
+		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 
 	assert.Equal(t,
-		`<div id="app"><ul><li><a target="_blank" href="https://www.youtube.com/watch?v=J---aiyznGQ">1: Keyboard Cat</a></li><li><a target="_blank" href="https://www.youtube.com/watch?v=z_AbfPXTKms">2: Maru</a></li><li><a target="_blank" href="https://www.youtube.com/watch?v=OUtn3pvWmpg">3: Henri The Existential Cat</a></li></ul></div>`,
+		`<ul><!--vigor_for-start--><li><a target="_blank" href="https://www.youtube.com/watch?v=J---aiyznGQ">1: Keyboard Cat</a></li><li><a target="_blank" href="https://www.youtube.com/watch?v=z_AbfPXTKms">2: Maru</a></li><li><a target="_blank" href="https://www.youtube.com/watch?v=OUtn3pvWmpg">3: Henri The Existential Cat</a></li><!--vigor_for-end--></ul>`,
 		appElHtml,
 	)
 }

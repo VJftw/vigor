@@ -14,11 +14,11 @@ func Test3aOnMount(t *testing.T) {
 	page := features.BuildServeAndGetVigorPage(t)
 	var appElHtml string
 	require.NoError(t, chromedp.Run(page,
-		chromedp.OuterHTML("#app", &appElHtml),
+		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 
 	assert.Equal(t,
-		`<div id="app"><div><div>Before</div><div>Error: Oh No</div><div>After</div></div></div>`,
+		`<div><div>Before</div><div>Error: Oh No</div><div>After</div></div>`,
 		appElHtml,
 	)
 }

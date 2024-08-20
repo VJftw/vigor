@@ -39,17 +39,7 @@ func CreateSignal(value any) (GetterFn, SetterFn) {
 			return
 		}
 
-		// convert all slices to []any
-		if reflect.TypeOf(nextValue).Kind() == reflect.Slice {
-			sliceVal := reflect.ValueOf(nextValue)
-			newNextValue := make([]any, sliceVal.Len())
-			for i := 0; i < sliceVal.Len(); i++ {
-				newNextValue[i] = sliceVal.Index(i).Interface()
-			}
-			nextValue = newNextValue
-		}
-
-		value = nextValue
+		value = Normalise(nextValue)
 
 		for s := range subscribers {
 			s.Run()
@@ -92,4 +82,18 @@ func NewDerivedSignal(upstream GetterFn, fn func(v any) any) GetterFn {
 	return func(s ...Subscriber) any {
 		return fn(upstream(s...))
 	}
+}
+
+func Normalise(v any) any {
+	// convert all slices to []any
+	if reflect.TypeOf(v).Kind() == reflect.Slice {
+		sliceVal := reflect.ValueOf(v)
+		newV := make([]any, sliceVal.Len())
+		for i := 0; i < sliceVal.Len(); i++ {
+			newV[i] = sliceVal.Index(i).Interface()
+		}
+		v = newV
+	}
+
+	return v
 }

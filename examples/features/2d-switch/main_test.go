@@ -14,11 +14,11 @@ func Test2dSwitch(t *testing.T) {
 
 	var appElHtml string
 	require.NoError(t, chromedp.Run(page,
-		chromedp.OuterHTML("#app", &appElHtml),
+		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 
 	assert.Equal(t,
-		`<div id="app"><p>7 is between 5 and 10</p></div>`,
+		`<p>7 is between 5 and 10</p>`,
 		appElHtml,
 	)
 }

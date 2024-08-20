@@ -1,6 +1,7 @@
 package html
 
 import (
+	"context"
 	"syscall/js"
 
 	"github.com/VJftw/vigor"
@@ -36,7 +37,7 @@ func (p *AttributeElementPlugin) HandleChild(child any) (bool, error) {
 	return false, nil
 }
 
-func (p *AttributeElementPlugin) Render(doc, obj js.Value) error {
+func (p *AttributeElementPlugin) Render(ctx context.Context, doc, obj js.Value) error {
 	subscriber := vigor.NewFnSubscriber()
 	subscriber.SetFn(func() {
 		for _, k := range p.attrOrder {

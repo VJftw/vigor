@@ -14,11 +14,11 @@ func Test1cComponents(t *testing.T) {
 
 	var appElHtml string
 	require.NoError(t, chromedp.Run(page,
-		chromedp.OuterHTML("#app", &appElHtml),
+		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 
 	assert.Equal(t,
-		`<div id="app"><div><h1>This is a Header</h1><p>This is a Paragraph</p></div></div>`,
+		`<div><h1>This is a Header</h1><p>This is a Paragraph</p></div>`,
 		appElHtml,
 	)
 }

@@ -1,6 +1,7 @@
 package html
 
 import (
+	"context"
 	"syscall/js"
 
 	"github.com/VJftw/vigor"
@@ -24,7 +25,7 @@ func Show(
 	}
 }
 
-func (n *nodeShow) DOMObject(doc js.Value) js.Value {
+func (n *nodeShow) DOMObject(ctx context.Context, doc js.Value) js.Value {
 	obj := doc.Call("createDocumentFragment")
 	fragmentRendered := false
 
@@ -32,9 +33,9 @@ func (n *nodeShow) DOMObject(doc js.Value) js.Value {
 	subscriber.SetFn(func() {
 		var newObj js.Value
 		if n.when(subscriber).(bool) {
-			newObj = n.truthy.DOMObject(doc)
+			newObj = n.truthy.DOMObject(ctx, doc)
 		} else {
-			newObj = n.falsey.DOMObject(doc)
+			newObj = n.falsey.DOMObject(ctx, doc)
 		}
 
 		if !fragmentRendered {

@@ -1,6 +1,7 @@
 package html
 
 import (
+	"context"
 	"syscall/js"
 
 	"github.com/VJftw/vigor"
@@ -40,13 +41,13 @@ func (p *ChildrenElementPlugin) HandleChild(child any) (bool, error) {
 	return true, nil
 }
 
-func (p *ChildrenElementPlugin) Render(doc, obj js.Value) error {
+func (p *ChildrenElementPlugin) Render(ctx context.Context, doc, obj js.Value) error {
 	newNodeObjs := []any{}
 
 	for i := 0; i < len(p.children); i++ {
 		child := p.children[i]
 		if childNode, ok := child.(Node); ok {
-			if x := childNode.DOMObject(doc); !x.IsUndefined() {
+			if x := childNode.DOMObject(ctx, doc); !x.IsUndefined() {
 				newNodeObjs = append(newNodeObjs, x)
 			}
 		} else {
@@ -62,7 +63,7 @@ func (p *ChildrenElementPlugin) Render(doc, obj js.Value) error {
 				i++
 			}
 			childNode := Text(textNodeArgs...)
-			if x := childNode.DOMObject(doc); !x.IsUndefined() {
+			if x := childNode.DOMObject(ctx, doc); !x.IsUndefined() {
 				newNodeObjs = append(newNodeObjs, x)
 			}
 		}

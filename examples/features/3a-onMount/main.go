@@ -22,6 +22,20 @@ import (
 	"github.com/VJftw/vigor/web"
 )
 
+const stylesheet = `
+.photos {
+	width: 100%;
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	grid-gap: 8px;
+}
+
+figure, img {
+	width: 100%;
+	margin: 0;
+}
+`
+
 func App() html.Node {
 	photos, setPhotos := vigor.CreateSignal([]any{})
 
@@ -40,8 +54,9 @@ func App() html.Node {
 					html.El("img", html.Property("src", p.ThumbnailUrl), html.Attr("alt", p.Title)),
 					html.El("figcaption", p.Title),
 				)
-			}),
+			}, html.WithForFallback(html.El("p", "Loading..."))),
 		),
+		html.StylesheetContent(stylesheet),
 	)
 
 	return html.OnMount(n, func() {
@@ -59,10 +74,10 @@ func App() html.Node {
 }
 
 func main() {
-	if err := web.RenderToElementID(
-		context.Background(),
+	ctx := context.Background()
+	web.RenderToElementID(ctx,
 		App(), "app",
-	); err != nil {
-		panic(err)
-	}
+	)
+
+	<-ctx.Done()
 }

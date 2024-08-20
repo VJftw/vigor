@@ -1,6 +1,7 @@
 package html
 
 import (
+	"context"
 	"syscall/js"
 
 	"github.com/VJftw/vigor"
@@ -31,7 +32,7 @@ func (p *PropertyElementPlugin) HandleChild(child any) (bool, error) {
 	return false, nil
 }
 
-func (p *PropertyElementPlugin) Render(doc, obj js.Value) error {
+func (p *PropertyElementPlugin) Render(ctx context.Context, doc, obj js.Value) error {
 	subscriber := vigor.NewFnSubscriber()
 	subscriber.SetFn(func() {
 		for k, v := range p.props {

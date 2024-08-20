@@ -1,6 +1,7 @@
-package tests
+package html_test
 
 import (
+	"context"
 	"syscall/js"
 	"testing"
 
@@ -30,7 +31,7 @@ func TestText(t *testing.T) {
 
 			document := js.Global().Get("document")
 
-			textContent := textNode.DOMObject(document).Get("textContent").String()
+			textContent := textNode.DOMObject(context.TODO(), document).Get("textContent").String()
 
 			assert.Equal(t, tt.outContent, textContent)
 		})

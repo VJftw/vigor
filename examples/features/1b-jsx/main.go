@@ -39,11 +39,11 @@ func HelloWorld() html.Node {
 }
 
 func main() {
-	if err := web.RenderToElementID(
-		context.Background(),
+	ctx := context.Background()
+	web.RenderToElementID(ctx,
 		HelloWorld(),
 		"app",
-	); err != nil {
-		panic(err)
-	}
+	)
+
+	<-ctx.Done()
 }

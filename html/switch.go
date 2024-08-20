@@ -1,6 +1,7 @@
 package html
 
 import (
+	"context"
 	"syscall/js"
 
 	"github.com/VJftw/vigor"
@@ -18,7 +19,7 @@ func Switch(defaultNode Node, cases ...*switchCase) Node {
 	}
 }
 
-func (n *nodeSwitch) DOMObject(doc js.Value) js.Value {
+func (n *nodeSwitch) DOMObject(ctx context.Context, doc js.Value) js.Value {
 	obj := doc.Call("createDocumentFragment")
 	fragmentRendered := false
 
@@ -29,14 +30,14 @@ func (n *nodeSwitch) DOMObject(doc js.Value) js.Value {
 		caseMatched := false
 		for _, c := range n.cases {
 			if c.when() {
-				newObj = c.node.DOMObject(doc)
+				newObj = c.node.DOMObject(ctx, doc)
 				caseMatched = true
 				break
 			}
 		}
 
 		if !caseMatched {
-			newObj = n.defaultNode.DOMObject(doc)
+			newObj = n.defaultNode.DOMObject(ctx, doc)
 		}
 
 		if !fragmentRendered {

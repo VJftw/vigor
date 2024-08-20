@@ -1,6 +1,7 @@
 package html
 
 import (
+	"context"
 	"syscall/js"
 )
 
@@ -16,8 +17,8 @@ func OnMount(n Node, fn func()) Node {
 	}
 }
 
-func (n *nodeOnMount) DOMObject(doc js.Value) js.Value {
-	defer n.fn()
+func (n *nodeOnMount) DOMObject(ctx context.Context, doc js.Value) js.Value {
+	defer func() { go n.fn() }()
 
-	return n.underlyingNode.DOMObject(doc)
+	return n.underlyingNode.DOMObject(ctx, doc)
 }
