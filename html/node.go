@@ -1,22 +1,25 @@
 package html
 
 import (
+	"context"
 	"syscall/js"
 )
 
+type DOMObjectFn func(context.Context, js.Value) js.Value
+
 type Node interface {
-	DOMObject(document js.Value) js.Value
+	DOMObject(ctx context.Context, document js.Value) js.Value
 }
 
 type nodeRender struct {
-	domObjectFn func(js.Value) js.Value
+	domObjectFn DOMObjectFn
 }
 
-func (n *nodeRender) DOMObject(doc js.Value) js.Value {
-	return n.domObjectFn(doc)
+func (n *nodeRender) DOMObject(ctx context.Context, doc js.Value) js.Value {
+	return n.domObjectFn(ctx, doc)
 }
 
-func NewNode(domObjectFn func(js.Value) js.Value) Node {
+func NewNode(domObjectFn DOMObjectFn) Node {
 	return &nodeRender{
 		domObjectFn: domObjectFn,
 	}

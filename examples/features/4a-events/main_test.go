@@ -15,28 +15,28 @@ func Test4aEvents(t *testing.T) {
 
 	var appElHtml string
 	require.NoError(t, chromedp.Run(page,
-		chromedp.OuterHTML("#app", &appElHtml),
+		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 
 	require.NoError(t,
 		chromedp.Run(page,
 			chromedp.MouseEvent(input.MouseMoved, 0, 0),
-			chromedp.OuterHTML("#app", &appElHtml),
+			chromedp.InnerHTML("#vigor-main", &appElHtml),
 		),
 	)
 	assert.Equal(t,
-		`<div id="app"><div>The mouse position is: 0 x 0</div></div>`,
+		`<div>The mouse position is: 0 x 0</div>`,
 		appElHtml,
 	)
 
 	require.NoError(t,
 		chromedp.Run(page,
 			chromedp.MouseEvent(input.MouseMoved, 500, 10),
-			chromedp.OuterHTML("#app", &appElHtml),
+			chromedp.InnerHTML("#vigor-main", &appElHtml),
 		),
 	)
 	assert.Equal(t,
-		`<div id="app"><div>The mouse position is: 500 x 10</div></div>`,
+		`<div>The mouse position is: 500 x 10</div>`,
 		appElHtml,
 	)
 }

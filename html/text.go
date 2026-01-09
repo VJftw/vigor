@@ -1,6 +1,7 @@
 package html
 
 import (
+	"context"
 	"fmt"
 	"syscall/js"
 
@@ -17,7 +18,7 @@ func Text(texts ...any) Node {
 	}
 }
 
-func (n *nodeText) DOMObject(doc js.Value) js.Value {
+func (n *nodeText) DOMObject(ctx context.Context, doc js.Value) js.Value {
 	obj := doc.Call("createTextNode", "")
 	hasGetterFn := false
 	for _, text := range n.texts {

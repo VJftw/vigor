@@ -30,11 +30,11 @@ func Test1eEffects(t *testing.T) {
 
 	var appElHtml string
 	require.NoError(t, chromedp.Run(page,
-		chromedp.OuterHTML("#app", &appElHtml),
+		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 
 	assert.Equal(t,
-		`<div id="app"><button>Click Me</button></div>`,
+		`<button>Click Me</button>`,
 		appElHtml,
 	)
 

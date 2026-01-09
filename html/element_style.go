@@ -1,6 +1,7 @@
 package html
 
 import (
+	"context"
 	"fmt"
 	"syscall/js"
 
@@ -32,7 +33,7 @@ func (p *StyleElementPlugin) HandleChild(child any) (bool, error) {
 	return false, nil
 }
 
-func (p *StyleElementPlugin) Render(doc, obj js.Value) error {
+func (p *StyleElementPlugin) Render(ctx context.Context, doc, obj js.Value) error {
 	if len(p.propertyValues) <= 0 {
 		return nil
 	}

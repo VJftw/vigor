@@ -15,17 +15,17 @@ func Test1gMemos(t *testing.T) {
 
 	var appElHtml string
 	require.NoError(t, chromedp.Run(page,
-		chromedp.OuterHTML("#app", &appElHtml),
+		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 
 	getExpectedHTML := func(count int) string {
-		s := `<div id="app"><div>`
+		s := `<div>`
 		s += `<button>Count: ` + fmt.Sprintf("%d", count) + `</button>`
 		fib := fibonacci(count)
 		for i := 1; i <= 10; i++ {
 			s += fmt.Sprintf(`<div>%d. %d %d %d %d %d</div>`, i, fib, fib, fib, fib, fib)
 		}
-		s += `</div></div>`
+		s += `</div>`
 
 		return s
 	}
@@ -38,7 +38,7 @@ func Test1gMemos(t *testing.T) {
 	for i := 10; i < 20; i++ {
 		require.NoError(t, chromedp.Run(page,
 			chromedp.Click("button"),
-			chromedp.OuterHTML("#app", &appElHtml),
+			chromedp.InnerHTML("#vigor-main", &appElHtml),
 		))
 
 		assert.Equal(t, getExpectedHTML(i+1), appElHtml)

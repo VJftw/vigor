@@ -1,6 +1,7 @@
 package html
 
 import (
+	"context"
 	"syscall/js"
 
 	"github.com/VJftw/vigor"
@@ -8,7 +9,7 @@ import (
 
 type ElementPlugin interface {
 	HandleChild(child any) (bool, error)
-	Render(doc, obj js.Value) error
+	Render(ctx context.Context, doc, obj js.Value) error
 }
 
 type nodeEl struct {
@@ -71,7 +72,7 @@ func El(name string, children ...any) Node {
 	return n
 }
 
-func (n *nodeEl) DOMObject(doc js.Value) js.Value {
+func (n *nodeEl) DOMObject(ctx context.Context, doc js.Value) js.Value {
 	var obj js.Value
 	if n.namespace == "" {
 		obj = doc.Call("createElement", n.name)
@@ -80,7 +81,7 @@ func (n *nodeEl) DOMObject(doc js.Value) js.Value {
 	}
 
 	for plugin := range n.plugins {
-		if err := plugin.Render(doc, obj); err != nil {
+		if err := plugin.Render(ctx, doc, obj); err != nil {
 			vigor.Log.Fatal("error rendering", err)
 		}
 	}

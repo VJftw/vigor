@@ -15,27 +15,27 @@ func Test1fDerivedSignals(t *testing.T) {
 
 	var appElHtml string
 	require.NoError(t, chromedp.Run(page,
-		chromedp.OuterHTML("#app", &appElHtml),
+		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 
 	assert.Equal(t,
-		`<div id="app"><div>Count: 0</div></div>`,
+		`<div>Count: 0</div>`,
 		appElHtml,
 	)
 
 	assert.Eventually(t, func() bool {
 		require.NoError(t, chromedp.Run(page,
-			chromedp.OuterHTML("#app", &appElHtml),
+			chromedp.InnerHTML("#vigor-main", &appElHtml),
 		))
 
-		return appElHtml == `<div id="app"><div>Count: 2</div></div>`
+		return appElHtml == `<div>Count: 2</div>`
 	}, 3*time.Second, 100*time.Millisecond)
 
 	assert.Eventually(t, func() bool {
 		require.NoError(t, chromedp.Run(page,
-			chromedp.OuterHTML("#app", &appElHtml),
+			chromedp.InnerHTML("#vigor-main", &appElHtml),
 		))
 
-		return appElHtml == `<div id="app"><div>Count: 4</div></div>`
+		return appElHtml == `<div>Count: 4</div>`
 	}, 3*time.Second, 100*time.Millisecond)
 }

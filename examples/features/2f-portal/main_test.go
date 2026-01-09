@@ -14,11 +14,11 @@ func Test2fPortal(t *testing.T) {
 
 	var appElHtml string
 	require.NoError(t, chromedp.Run(page,
-		chromedp.OuterHTML("#app", &appElHtml),
+		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 
 	assert.Equal(t,
-		`<div id="app"><div><p>Just some text inside a div that has a restricted size.</p></div></div>`,
+		`<div><p>Just some text inside a div that has a restricted size.</p></div>`,
 		appElHtml,
 	)
 

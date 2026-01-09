@@ -14,29 +14,29 @@ func Test2eDynamic(t *testing.T) {
 
 	var appElHtml string
 	require.NoError(t, chromedp.Run(page,
-		chromedp.OuterHTML("#app", &appElHtml),
+		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 
 	assert.Equal(t,
-		`<div id="app"><div><select><option value="red">red</option><option value="green">green</option><option value="blue">blue</option></select><strong style="color: red;">Red Thing</strong></div></div>`,
+		`<div><select><!--vigor_for-start--><option value="red">red</option><option value="green">green</option><option value="blue">blue</option><!--vigor_for-end--></select><strong style="color: red;">Red Thing</strong></div>`,
 		appElHtml,
 	)
 
 	require.NoError(t, chromedp.Run(page,
 		chromedp.SetValue(`select`, "green", chromedp.ByQuery),
-		chromedp.OuterHTML("#app", &appElHtml),
+		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 	assert.Equal(t,
-		`<div id="app"><div><select><option value="red">red</option><option value="green">green</option><option value="blue">blue</option></select><strong style="color: green;">Green Thing</strong></div></div>`,
+		`<div><select><!--vigor_for-start--><option value="red">red</option><option value="green">green</option><option value="blue">blue</option><!--vigor_for-end--></select><strong style="color: green;">Green Thing</strong></div>`,
 		appElHtml,
 	)
 
 	require.NoError(t, chromedp.Run(page,
 		chromedp.SetValue(`select`, "blue", chromedp.ByQuery),
-		chromedp.OuterHTML("#app", &appElHtml),
+		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 	assert.Equal(t,
-		`<div id="app"><div><select><option value="red">red</option><option value="green">green</option><option value="blue">blue</option></select><strong style="color: blue;">Blue Thing</strong></div></div>`,
+		`<div><select><!--vigor_for-start--><option value="red">red</option><option value="green">green</option><option value="blue">blue</option><!--vigor_for-end--></select><strong style="color: blue;">Blue Thing</strong></div>`,
 		appElHtml,
 	)
 }

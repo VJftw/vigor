@@ -1,6 +1,7 @@
 package html
 
 import (
+	"context"
 	"reflect"
 	"syscall/js"
 
@@ -19,7 +20,7 @@ func Index(v vigor.GetterFn, fn func(i int, v any) Node) Node {
 	}
 }
 
-func (n *nodeIndex) DOMObject(doc js.Value) js.Value {
+func (n *nodeIndex) DOMObject(ctx context.Context, doc js.Value) js.Value {
 	obj := doc.Call("createDocumentFragment")
 
 	currentItems := []any{}
@@ -33,7 +34,7 @@ func (n *nodeIndex) DOMObject(doc js.Value) js.Value {
 			if !reflect.DeepEqual(newItems[i], currentItems[i]) {
 				currentItems[i] = newItems[i]
 
-				newItemObj := n.fn(i, newItems[i]).DOMObject(doc)
+				newItemObj := n.fn(i, newItems[i]).DOMObject(ctx, doc)
 				currentItemObjs[i].Call("replaceWith", newItemObj)
 			}
 		}
@@ -42,7 +43,7 @@ func (n *nodeIndex) DOMObject(doc js.Value) js.Value {
 			for i := len(currentItems); i < len(newItems); i++ {
 				currentItems = append(currentItems, newItems[i])
 
-				newItemObj := n.fn(i, newItems[i]).DOMObject(doc)
+				newItemObj := n.fn(i, newItems[i]).DOMObject(ctx, doc)
 				currentItemObjs = append(currentItemObjs, newItemObj)
 				obj.Call("append", newItemObj)
 			}

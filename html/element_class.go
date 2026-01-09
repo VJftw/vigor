@@ -1,6 +1,7 @@
 package html
 
 import (
+	"context"
 	"fmt"
 	"syscall/js"
 
@@ -27,7 +28,7 @@ func (p *ClassElementPlugin) HandleChild(child any) (bool, error) {
 	return false, nil
 }
 
-func (p *ClassElementPlugin) Render(doc, obj js.Value) error {
+func (p *ClassElementPlugin) Render(ctx context.Context, doc, obj js.Value) error {
 	subscriber := vigor.NewFnSubscriber()
 	subscriber.SetFn(func() {
 		className := ""

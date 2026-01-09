@@ -21,14 +21,16 @@ func BuildServeAndGetVigorPage(t *testing.T, chromedpOpts ...func(*chromedp.Cont
 	wasmExecJs, err := os.ReadFile(filepath.Join(runtime.GOROOT(), "misc", "wasm", "wasm_exec.js"))
 	require.NoError(t, err)
 
-	indexHTML, err := os.ReadFile(filepath.Join(wd, "..", "..", "_common", "index.html"))
+	indexHTML, err := os.ReadFile(filepath.Join(wd, "..", "..", "testdata", "index.html"))
 	require.NoError(t, err)
 
 	tempDir := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "wasm_exec.js"), wasmExecJs, 0o600))
 	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "index.html"), indexHTML, 0o600))
 
-	cmd := exec.Command("go", "build", "-o", filepath.Join(tempDir, "main.wasm"), "./")
+	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "go", "build", "-o", filepath.Join(tempDir, "main.wasm"), "./")
 	cmd.Env = append(os.Environ(),
 		"GOARCH=wasm",
 		"GOOS=js",
@@ -51,7 +53,7 @@ func BuildServeAndGetVigorPage(t *testing.T, chromedpOpts ...func(*chromedp.Cont
 		require.NoError(t, err)
 	}
 
-	chromeCtx, cancel := context.WithTimeout(chromeCtx, 30*time.Second)
+	chromeCtx, cancel = context.WithTimeout(chromeCtx, 30*time.Second)
 	t.Cleanup(func() { cancel() })
 	if err := chromedp.Run(chromeCtx,
 		chromedp.WaitReady("#vigor-info"),

@@ -20,14 +20,14 @@ func Nested() html.Node {
 }
 
 func main() {
-	if err := web.RenderToElementID(
-		context.Background(),
+	ctx := context.Background()
+	web.RenderToElementID(ctx,
 		html.El("div",
 			html.El("h1", html.Text("This is a Header")),
 			Nested(),
 		),
 		"app",
-	); err != nil {
-		panic(err)
-	}
+	)
+
+	<-ctx.Done()
 }

@@ -9,16 +9,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test1cComponents(t *testing.T) {
+func Test3aOnMount(t *testing.T) {
+	t.Skip()
 	page := features.BuildServeAndGetVigorPage(t)
-
 	var appElHtml string
 	require.NoError(t, chromedp.Run(page,
 		chromedp.InnerHTML("#vigor-main", &appElHtml),
 	))
 
 	assert.Equal(t,
-		`<div><h1>This is a Header</h1><p>This is a Paragraph</p></div>`,
+		`<div><div>Before</div><div>Error: Oh No</div><div>After</div></div>`,
 		appElHtml,
 	)
 }

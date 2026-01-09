@@ -88,10 +88,10 @@ func Counter() html.Node {
 }
 
 func main() {
-	if err := web.RenderToElementID(
-		context.Background(),
+	ctx := context.Background()
+	web.RenderToElementID(ctx,
 		Counter(), "app",
-	); err != nil {
-		panic(err)
-	}
+	)
+
+	<-ctx.Done()
 }
