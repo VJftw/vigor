@@ -2,12 +2,14 @@ package features
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"testing"
 	"time"
 
@@ -15,20 +17,37 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func BuildServeAndGetVigorPage(t *testing.T, chromedpOpts ...func(*chromedp.Context)) context.Context {
-	wd, err := os.Getwd()
-	require.NoError(t, err)
-	wasmExecJs, err := os.ReadFile(filepath.Join(runtime.GOROOT(), "misc", "wasm", "wasm_exec.js"))
-	require.NoError(t, err)
+const indexHTML = `
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<script src="wasm_exec.js"></script>
+</head>
+<body>
+    <div id="app"></div>
+	<script>
+		document.addEventListener("DOMContentLoaded", (event) => {
+ console.log(document.getElementById('app'))
+		const go = new Go();
+		WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
+			go.run(result.instance);
+		});
+});
 
-	indexHTML, err := os.ReadFile(filepath.Join(wd, "..", "..", "testdata", "index.html"))
+	</script>
+</body>
+</html>
+`
+
+func BuildServeAndGetVigorPage(t *testing.T, chromedpOpts ...func(*chromedp.Context)) context.Context {
+	wasmExecJs, err := os.ReadFile(filepath.Join(runtime.GOROOT(), "lib", "wasm", "wasm_exec.js"))
 	require.NoError(t, err)
 
 	tempDir := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "wasm_exec.js"), wasmExecJs, 0o600))
-	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "index.html"), indexHTML, 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "index.html"), []byte(indexHTML), 0o600))
 
-	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, "go", "build", "-o", filepath.Join(tempDir, "main.wasm"), "./")
 	cmd.Env = append(os.Environ(),
@@ -38,14 +57,14 @@ func BuildServeAndGetVigorPage(t *testing.T, chromedpOpts ...func(*chromedp.Cont
 	out, err := cmd.CombinedOutput()
 	require.NoErrorf(t, err, "output: %s", out)
 
-	chromeCtx, cancelChromeCtx := chromedp.NewContext(context.TODO(), chromedpOpts...)
+	chromeCtx, cancelChromeCtx := chromedp.NewContext(t.Context(), chromedpOpts...)
 	t.Cleanup(func() {
 		cancelChromeCtx()
 	})
 
 	fs := http.FileServer(http.Dir(tempDir))
 	s := httptest.NewServer(fs)
-
+	log.Printf("Test Page at %s", s.URL)
 	if err := chromedp.Run(chromeCtx,
 		chromedp.Navigate(s.URL),
 	); err != nil {
@@ -66,4 +85,39 @@ func BuildServeAndGetVigorPage(t *testing.T, chromedpOpts ...func(*chromedp.Cont
 	})
 
 	return chromeCtx
+}
+
+// Eval evaluates JavaScript in the page, into out (a pointer).
+func Eval(t *testing.T, page context.Context, js string, out any) {
+	t.Helper()
+	require.NoError(t, chromedp.Run(page, chromedp.Evaluate(js, out)))
+}
+
+// Text is the text content of the first element matching a selector, or
+// "<none>" if there isn't one.
+func Text(t *testing.T, page context.Context, selector string) string {
+	t.Helper()
+	var s string
+	Eval(t, page, "document.querySelector("+strconv.Quote(selector)+")?.textContent ?? '<none>'", &s)
+
+	return s
+}
+
+// Click clicks the first element matching a selector, in the page.
+func Click(t *testing.T, page context.Context, selector string) {
+	t.Helper()
+	Eval(t, page, "document.querySelector("+strconv.Quote(selector)+").click()", nil)
+}
+
+// Eventually waits for cond to hold, printing the page if it doesn't.
+func Eventually(t *testing.T, page context.Context, what string, cond func() bool) {
+	t.Helper()
+	for end := time.Now().Add(5 * time.Second); time.Now().Before(end); time.Sleep(20 * time.Millisecond) {
+		if cond() {
+			return
+		}
+	}
+	var html string
+	Eval(t, page, "document.body.innerHTML", &html)
+	t.Fatalf("timed out waiting for %s; page:\n%s", what, html)
 }
