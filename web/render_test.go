@@ -19,5 +19,5 @@ func TestRenderToElementID(t *testing.T) {
 
 	web.RenderToElementID(t.Context(), node, "app")
 
-	assert.Equal(t, `<vigor-main id="vigor-main"><p>Hello World!</p></vigor-main><vigor-portal-root id="vigor-portal-root"></vigor-portal-root><vigor-info id="vigor-info" hidden=""></vigor-info>`, divObj.Get("innerHTML").String())
+	assert.Equal(t, `<vigor-info id="vigor-info" hidden=""></vigor-info><vigor-main id="vigor-main"><p>Hello World!</p></vigor-main><vigor-portal-root id="vigor-portal-root"></vigor-portal-root>`, divObj.Get("innerHTML").String())
 }

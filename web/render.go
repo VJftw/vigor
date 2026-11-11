@@ -33,20 +33,17 @@ func RenderTo(ctx context.Context, document js.Value, n html.Node, rootEl js.Val
 	portalObj := document.Call("createElement", "vigor-portal-root")
 	portalObj.Set("id", "vigor-portal-root")
 
+	// Both are in the page before rendering, so Portals can find theirs.
+	rootEl.Call("append", mainObj)
+	rootEl.Call("append", portalObj)
+
 	dispose := vigor.CreateRoot(func(dispose func()) func() {
-		thisEl := n.DOMObject(ctx, document)
-		if !thisEl.IsNull() && !thisEl.IsUndefined() {
-			if !thisEl.Get("vigor-portal").IsUndefined() {
-				portalObj.Call("replaceChildren", thisEl)
-			} else {
-				mainObj.Call("replaceChildren", thisEl)
-			}
+		if thisEl := n.DOMObject(ctx, document); !thisEl.IsNull() && !thisEl.IsUndefined() {
+			mainObj.Call("replaceChildren", thisEl)
 		}
 
 		return dispose
 	})
-	rootEl.Call("append", mainObj)
-	rootEl.Call("append", portalObj)
 
 	unmount = func() {
 		dispose()

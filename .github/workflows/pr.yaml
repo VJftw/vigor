@@ -1,58 +1,87 @@
 name: PR
 
 on:
-  push: {}
+  push:
+    branches: [main]
   pull_request:
-    types: [opened, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
+    name: Build and vet
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
-          go-version: "stable"
+          go-version-file: go.mod
 
-      - name: Go Build
+      - name: Formatting
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+
+      # The DOM packages only build for the browser.
+      - name: Build (WebAssembly)
         env:
           GOOS: js
           GOARCH: wasm
-        run: go build ./...
+        run: go build ./... && go vet ./...
 
-  test:
+  core:
+    name: Core tests
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
-          go-version: "stable"
+          go-version-file: go.mod
 
-      - name: Install chrome
-        uses: browser-actions/setup-chrome@latest
+      # The reactive core and the router's matching need no browser.
+      - name: Go test
+        run: go test -race -cover . ./router
 
-      - name: Go Test
-        run: make -C tests test
+  browser:
+    name: Package tests (browser)
+    runs-on: ubuntu-latest
 
-      - uses: actions/upload-artifact@v4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          name: test-coverage
-          path: tests/.coverage/coverage.html
+          go-version-file: go.mod
+
+      # Chrome's sandbox needs user namespaces, which Ubuntu 24.04 restricts.
+      - name: Allow Chrome's sandbox
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+      # Runs WebAssembly tests in the Chrome the runner has.
+      - name: Install wasmbrowsertest
+        run: go install github.com/agnivade/wasmbrowsertest@latest
+
+      - name: Go test
+        env:
+          GOOS: js
+          GOARCH: wasm
+        run: go test -exec "$(go env GOPATH)/bin/wasmbrowsertest" ./html/... ./web/...
 
   features:
+    name: Examples
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
-          go-version: "stable"
+          go-version-file: go.mod
 
-      - name: Go Test
-        run: make -C examples/features test
+      - name: Allow Chrome's sandbox
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+      # Each example is built to WebAssembly and driven in Chrome.
+      - name: Go test
+        working-directory: examples/features
+        run: go test ./...

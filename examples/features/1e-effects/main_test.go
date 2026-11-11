@@ -22,8 +22,14 @@ func Test1eEffects(t *testing.T) {
 				return
 			}
 			if method, ok := event["method"]; ok && method == "Runtime.consoleAPICalled" {
-				line := event["params"].(map[string]any)["args"].([]any)[0].(map[string]any)["value"].(string)
-				logsCh <- line
+				// Only text: other messages (objects, errors) have no value.
+				args, _ := event["params"].(map[string]any)["args"].([]any)
+				if len(args) == 0 {
+					return
+				}
+				if line, ok := args[0].(map[string]any)["value"].(string); ok {
+					logsCh <- line
+				}
 			}
 		}),
 	)
