@@ -2,7 +2,7 @@ package html
 
 import (
 	"context"
-	"fmt"
+	"strings"
 	"syscall/js"
 
 	"github.com/VJftw/vigor"
@@ -12,6 +12,8 @@ type nodeText struct {
 	texts []any
 }
 
+// Text is a text node of its parts joined: strings, numbers and so on, and
+// getters, which keep it up to date.
 func Text(texts ...any) Node {
 	return &nodeText{
 		texts: texts,
@@ -20,43 +22,27 @@ func Text(texts ...any) Node {
 
 func (n *nodeText) DOMObject(ctx context.Context, doc js.Value) js.Value {
 	obj := doc.Call("createTextNode", "")
-	hasGetterFn := false
-	for _, text := range n.texts {
-		if _, ok := text.(vigor.GetterFn); ok {
-			hasGetterFn = true
-			break
+
+	render := func(sub vigor.Subscriber) {
+		var sb strings.Builder
+		for _, t := range n.texts {
+			sb.WriteString(text(value(t, sub)))
 		}
-		if _, ok := text.(*subscribedText); ok {
-			hasGetterFn = true
+		obj.Set("textContent", sb.String())
+	}
+
+	reactive := false
+	for _, t := range n.texts {
+		if isReactive(t) {
+			reactive = true
+
 			break
 		}
 	}
-
-	if hasGetterFn {
-		subscriber := vigor.NewFnSubscriber()
-		subscriber.SetFn(func() {
-			content := ""
-			for _, text := range n.texts {
-				if dep, ok := text.(*subscribedText); ok {
-					text = dep.fn(subscriber)
-				}
-
-				if getter, ok := text.(vigor.GetterFn); ok {
-					text = getter(subscriber)
-				}
-
-				content += fmt.Sprintf("%v", text)
-			}
-
-			obj.Set("textContent", content)
-		}).Run()
+	if reactive {
+		bind(render)
 	} else {
-		content := ""
-		for _, text := range n.texts {
-			content += fmt.Sprintf("%v", text)
-		}
-
-		obj.Set("textContent", content)
+		render(nil)
 	}
 
 	return obj

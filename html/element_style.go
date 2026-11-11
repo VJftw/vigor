@@ -2,7 +2,7 @@ package html
 
 import (
 	"context"
-	"fmt"
+	"strings"
 	"syscall/js"
 
 	"github.com/VJftw/vigor"
@@ -37,22 +37,25 @@ func (p *StyleElementPlugin) Render(ctx context.Context, doc, obj js.Value) erro
 	if len(p.propertyValues) <= 0 {
 		return nil
 	}
-	subscriber := vigor.NewFnSubscriber()
-	subscriber.SetFn(func() {
-		styleAttr := ""
+	bind(func(sub vigor.Subscriber) {
+		var sb strings.Builder
 		for _, k := range p.propertyOrder {
-			v := p.propertyValues[k]
-			if x, ok := v.(vigor.GetterFn); ok {
-				v = x(subscriber)
+			v := value(p.propertyValues[k], sub)
+			if v == nil || v == "" {
+				continue
 			}
-			styleAttr += fmt.Sprintf("%s: %s;", k, v)
+			sb.WriteString(k + ": " + text(v) + ";")
 		}
-		obj.Set("style", styleAttr)
-	}).Run()
+		obj.Set("style", sb.String())
+	})
 
 	return nil
 }
 
+// Style sets a CSS property, including custom properties
+// (Style("--duration", "5s")). value is a value or a getter; nil or empty
+// leaves the property out.
+//
 // https://www.solidjs.com/tutorial/bindings_style
 type elementStyle struct {
 	property string

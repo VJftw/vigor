@@ -35,7 +35,11 @@ func (p *ChildrenElementPlugin) HandleChild(child any) (bool, error) {
 		p.children = append(p.children, x)
 
 	default:
-		return false, nil
+		// Allow any getter (func() T) as shorthand for a Text node.
+		if _, ok := accessorType(x); !ok {
+			return false, nil
+		}
+		p.children = append(p.children, x)
 	}
 
 	return true, nil
@@ -62,6 +66,7 @@ func (p *ChildrenElementPlugin) Render(ctx context.Context, doc, obj js.Value) e
 				}
 				i++
 			}
+			i-- // the loop's own i++ would skip the node that ended the run
 			childNode := Text(textNodeArgs...)
 			if x := childNode.DOMObject(ctx, doc); !x.IsUndefined() {
 				newNodeObjs = append(newNodeObjs, x)

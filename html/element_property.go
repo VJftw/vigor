@@ -14,6 +14,7 @@ type elementProperty struct {
 
 type PropertyElementPlugin struct {
 	props map[string]any
+	order []string
 }
 
 func NewPropertyElementPlugin() ElementPlugin {
@@ -24,6 +25,9 @@ func NewPropertyElementPlugin() ElementPlugin {
 
 func (p *PropertyElementPlugin) HandleChild(child any) (bool, error) {
 	if x, ok := child.(*elementProperty); ok {
+		if _, ok := p.props[x.k]; !ok {
+			p.order = append(p.order, x.k)
+		}
 		p.props[x.k] = x.v
 
 		return true, nil
@@ -33,19 +37,24 @@ func (p *PropertyElementPlugin) HandleChild(child any) (bool, error) {
 }
 
 func (p *PropertyElementPlugin) Render(ctx context.Context, doc, obj js.Value) error {
-	subscriber := vigor.NewFnSubscriber()
-	subscriber.SetFn(func() {
-		for k, v := range p.props {
-			if x, ok := v.(vigor.GetterFn); ok {
-				v = x(subscriber)
+	for _, k := range p.order {
+		v := p.props[k]
+		bind(func(sub vigor.Subscriber) {
+			next := js.ValueOf(value(v, sub))
+			// Leave it alone when it's already right: setting a text
+			// input's value moves the caret.
+			if cur := obj.Get(k); cur.Equal(next) {
+				return
 			}
-			obj.Set(k, v)
-		}
-	}).Run()
+			obj.Set(k, next)
+		})
+	}
 
 	return nil
 }
 
+// Property sets a DOM property (value, checked, scrollTop...) rather than
+// an attribute. v is a value or a getter.
 func Property(k string, v any) *elementProperty {
 	return &elementProperty{
 		k: k,

@@ -2,7 +2,7 @@ package html
 
 import (
 	"context"
-	"fmt"
+	"strings"
 	"syscall/js"
 
 	"github.com/VJftw/vigor"
@@ -29,25 +29,24 @@ func (p *ClassElementPlugin) HandleChild(child any) (bool, error) {
 }
 
 func (p *ClassElementPlugin) Render(ctx context.Context, doc, obj js.Value) error {
-	subscriber := vigor.NewFnSubscriber()
-	subscriber.SetFn(func() {
-		className := ""
-		for i, class := range p.classList {
-			if i > 0 {
-				className += " "
-			}
-			if x, ok := class.(vigor.GetterFn); ok {
-				class = x(subscriber)
-			}
-			classStr := fmt.Sprintf("%s", class)
-			if len(classStr) > 0 {
-				className += classStr
+	if len(p.classList) == 0 {
+		return nil
+	}
+	bind(func(sub vigor.Subscriber) {
+		var classes []string
+		for _, class := range p.classList {
+			if s := strings.TrimSpace(text(value(class, sub))); s != "" {
+				classes = append(classes, s)
 			}
 		}
-		if className != "" {
-			obj.Set("className", className)
+		// Always set it, so a class that went away is removed.
+		className := strings.Join(classes, " ")
+		if className == "" && !obj.Call("hasAttribute", "class").Bool() {
+			return
 		}
-	}).Run()
+		obj.Set("className", className)
+	})
+
 	return nil
 }
 
@@ -59,8 +58,21 @@ func (e *elementClass) values() []any {
 	return e.v
 }
 
+// Class adds classes: strings, or getters of strings (a getter may return
+// several, space-separated, or nothing).
 func Class(v ...any) *elementClass {
 	return &elementClass{
 		v: v,
 	}
+}
+
+type classCond struct {
+	name string
+	cond any
+}
+
+// ClassIf adds a class while cond (a bool, or a getter of anything truthy)
+// holds, e.g. ClassIf("active", isActive).
+func ClassIf(name string, cond any) *elementClass {
+	return &elementClass{v: []any{classCond{name: name, cond: cond}}}
 }
