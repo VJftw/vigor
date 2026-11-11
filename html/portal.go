@@ -15,12 +15,7 @@ func Portal(node Node) Node {
 	}
 }
 
+// TODO: Portal should be separate if a separate tree
 func (n *nodePortal) DOMObject(ctx context.Context, doc js.Value) js.Value {
-	rootPortal := doc.Call("getElementById", "vigor-portal-root")
-	thisPortalObj := doc.Call("createElement", "vigor-portal")
-	rootPortal.Call("append", thisPortalObj)
-
-	thisPortalObj.Call("replaceChildren", n.node.DOMObject(ctx, doc))
-
-	return js.Undefined()
+	return n.node.DOMObject(ctx, doc)
 }

@@ -1,7 +1,6 @@
 package web_test
 
 import (
-	"context"
 	"syscall/js"
 	"testing"
 
@@ -18,7 +17,7 @@ func TestRenderToElementID(t *testing.T) {
 	divObj.Set("id", "app")
 	document.Get("body").Call("append", divObj)
 
-	web.RenderToElementID(context.TODO(), node, "app")
+	web.RenderToElementID(t.Context(), node, "app")
 
 	assert.Equal(t, `<vigor-main id="vigor-main"><p>Hello World!</p></vigor-main><vigor-portal-root id="vigor-portal-root"></vigor-portal-root><vigor-info id="vigor-info" hidden=""></vigor-info>`, divObj.Get("innerHTML").String())
 }

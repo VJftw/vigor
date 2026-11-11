@@ -8,6 +8,8 @@ import (
 type DOMObjectFn func(context.Context, js.Value) js.Value
 
 type Node interface {
+	// DOMObject returns the DOM Object for the Node, with the given context and
+	// global 'document' value.
 	DOMObject(ctx context.Context, document js.Value) js.Value
 }
 

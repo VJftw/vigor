@@ -1,5 +1,6 @@
 package vigor
 
+// TODO: Generics?
 import "reflect"
 
 // GetterFn represents functions which return the current value of a Signal.

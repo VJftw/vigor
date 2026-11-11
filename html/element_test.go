@@ -1,7 +1,6 @@
 package html_test
 
 import (
-	"context"
 	"syscall/js"
 	"testing"
 
@@ -42,7 +41,7 @@ func TestEl(t *testing.T) {
 			elNode := html.El(tt.inEl, tt.inChildren...)
 
 			document := js.Global().Get("document")
-			textContent := elNode.DOMObject(context.TODO(), document).Get("outerHTML").String()
+			textContent := elNode.DOMObject(t.Context(), document).Get("outerHTML").String()
 
 			assert.Equal(t, tt.outContent, textContent)
 		})

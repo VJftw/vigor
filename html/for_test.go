@@ -64,7 +64,7 @@ func TestFor_Static(t *testing.T) {
 		t.Run(tt.description, func(t *testing.T) {
 			t.Cleanup(func() { appObj.Call("replaceChildren") })
 			forNode := html.For(tt.inSlice, tt.inForFn, tt.opts...)
-			ctx, cancel := context.WithCancel(context.TODO())
+			ctx, cancel := context.WithCancel(t.Context())
 			t.Cleanup(cancel)
 			web.RenderTo(ctx, document, forNode, appObj)
 
@@ -156,7 +156,7 @@ func TestFor_Dynamic(t *testing.T) {
 			sliceSignal, setSliceSignal := vigor.CreateSignal([]any{})
 
 			forNode := html.For(sliceSignal, tt.inForFn, tt.opts...)
-			ctx, cancel := context.WithCancel(context.TODO())
+			ctx, cancel := context.WithCancel(t.Context())
 			t.Cleanup(cancel)
 			web.RenderTo(ctx, document, forNode, appObj)
 

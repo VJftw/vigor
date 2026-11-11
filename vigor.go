@@ -1,4 +1,4 @@
-// Package vigor implements the core primitives of [SolidJS](https://www.solidjs.com/)
+// Package vigor implements the core primitives of [SolidJS v1](https://www.solidjs.com/)
 // in Golang for use in building reactive web interfaces powered by Web Assembly
 // (WASM).
 //
