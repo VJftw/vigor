@@ -84,4 +84,6 @@ jobs:
       # Each example is built to WebAssembly and driven in Chrome.
       - name: Go test
         working-directory: examples/features
-        run: go test ./...
+        # Each example builds a WebAssembly program and starts Chrome: a few at a
+        # time, so the runner is not starved.
+        run: go test -p 2 ./...

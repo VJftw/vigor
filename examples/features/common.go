@@ -46,7 +46,8 @@ func BuildServeAndGetVigorPage(t *testing.T, chromedpOpts ...func(*chromedp.Cont
 	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "wasm_exec.js"), wasmExecJs, 0o600))
 	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "index.html"), []byte(indexHTML), 0o600))
 
-	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+	// A cold build cache, with other examples building too, takes a while.
+	ctx, cancel := context.WithTimeout(t.Context(), 3*time.Minute)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, "go", "build", "-o", filepath.Join(tempDir, "main.wasm"), "./")
 	cmd.Env = append(os.Environ(),
