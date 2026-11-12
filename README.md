@@ -6,6 +6,53 @@ This package is a **highly experimental** interpretation and implementation of [
 
 - Restructure to new Docs https://docs.solidjs.com/
 
+## Getting started
+
+An app is a Go `main` package built for the browser:
+
+```go
+//go:build js && wasm
+
+package main
+
+import (
+	"context"
+
+	"github.com/VJftw/vigor"
+	"github.com/VJftw/vigor/html"
+	"github.com/VJftw/vigor/web"
+)
+
+func App() html.Node {
+	count, setCount := vigor.NewSignal(0)
+
+	return html.El("button", html.OnClick(func() { setCount(vigor.Untrack(count) + 1) }),
+		"Clicked ", count, " times")
+}
+
+func main() {
+	ctx := context.Background()
+	web.Mount(ctx, "app", App)
+
+	<-ctx.Done()
+}
+```
+
+To run it, a browser needs a page with an `app` element, Go's `wasm_exec.js`
+and the program. `vigor` provides them:
+
+```sh
+go run github.com/VJftw/vigor/cmd/vigor serve .          # build and serve on :8080
+go run github.com/VJftw/vigor/cmd/vigor build -o dist .  # write a site to deploy
+```
+
+`serve` builds again whenever the page is loaded, so edit, reload, and see
+it. Paths that aren't files get the page, so routes (`/items/3`) survive a
+reload. The same pieces are a Go package, [`site`](site), for your own tooling
+(`site.Build`, `site.Write`, `site.Handler`, with options for the title,
+styles, icon and extra `<head>`). It's all optional: an app with its own page,
+service worker or hosting uses only what it likes.
+
 ## Building real apps
 
 Beyond static reactive nodes, a live app needs state that follows a stream,

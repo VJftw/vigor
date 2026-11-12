@@ -3,67 +3,34 @@ package features
 import (
 	"context"
 	"log"
-	"net/http"
 	"net/http/httptest"
-	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"testing"
 	"time"
 
+	"github.com/VJftw/vigor/site"
 	"github.com/chromedp/chromedp"
 	"github.com/stretchr/testify/require"
 )
 
-const indexHTML = `
-<html>
-<head>
-	<meta charset="utf-8"/>
-	<script src="wasm_exec.js"></script>
-</head>
-<body>
-    <div id="app"></div>
-	<script>
-		document.addEventListener("DOMContentLoaded", (event) => {
-		const go = new Go();
-		WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
-			go.run(result.instance);
-		});
-});
-
-	</script>
-</body>
-</html>
-`
-
 func BuildServeAndGetVigorPage(t *testing.T, chromedpOpts ...func(*chromedp.Context)) context.Context {
-	wasmExecJs, err := os.ReadFile(filepath.Join(runtime.GOROOT(), "lib", "wasm", "wasm_exec.js"))
-	require.NoError(t, err)
-
 	tempDir := t.TempDir()
-	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "wasm_exec.js"), wasmExecJs, 0o600))
-	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "index.html"), []byte(indexHTML), 0o600))
 
 	// A cold build cache, with other examples building too, takes a while.
 	ctx, cancel := context.WithTimeout(t.Context(), 3*time.Minute)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, "go", "build", "-o", filepath.Join(tempDir, "main.wasm"), "./")
-	cmd.Env = append(os.Environ(),
-		"GOARCH=wasm",
-		"GOOS=js",
-	)
-	out, err := cmd.CombinedOutput()
-	require.NoErrorf(t, err, "output: %s", out)
+	wasm := filepath.Join(t.TempDir(), "main.wasm")
+	require.NoError(t, site.Build(ctx, "./", wasm))
+	_, err := site.Write(tempDir, wasm, site.Options{})
+	require.NoError(t, err)
 
 	chromeCtx, cancelChromeCtx := chromedp.NewContext(t.Context(), chromedpOpts...)
 	t.Cleanup(func() {
 		cancelChromeCtx()
 	})
 
-	fs := http.FileServer(http.Dir(tempDir))
-	s := httptest.NewServer(fs)
+	s := httptest.NewServer(site.Handler(tempDir))
 	log.Printf("Test Page at %s", s.URL)
 	if err := chromedp.Run(chromeCtx,
 		chromedp.Navigate(s.URL),
