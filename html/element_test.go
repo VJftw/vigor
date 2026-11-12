@@ -47,3 +47,23 @@ func TestEl(t *testing.T) {
 		})
 	}
 }
+
+const svgNS = "http://www.w3.org/2000/svg"
+
+func TestSVGClass(t *testing.T) {
+	document := js.Global().Get("document")
+
+	el := html.NEl(svgNS, "g", html.Class("node", "big")).DOMObject(t.Context(), document)
+	assert.Equal(t, `<g class="node big"></g>`, el.Get("outerHTML").String())
+	assert.Equal(t, svgNS, el.Get("namespaceURI").String())
+
+	// A class that follows a signal comes and goes.
+	selected, setSelected := vigor.NewSignal(false)
+	el = html.NEl(svgNS, "circle", html.Class("node"), html.ClassIf("selected", selected)).DOMObject(t.Context(), document)
+	assert.Equal(t, "node", el.Call("getAttribute", "class").String())
+	setSelected(true)
+	assert.Equal(t, "node selected", el.Call("getAttribute", "class").String())
+	assert.True(t, el.Get("classList").Call("contains", "selected").Bool())
+	setSelected(false)
+	assert.Equal(t, "node", el.Call("getAttribute", "class").String())
+}
