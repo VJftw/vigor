@@ -39,12 +39,13 @@ func (p *ClassElementPlugin) Render(ctx context.Context, doc, obj js.Value) erro
 				classes = append(classes, s)
 			}
 		}
-		// Always set it, so a class that went away is removed.
+		// Always set it, so a class that went away is removed. As the
+		// attribute: SVG elements' className is read-only.
 		className := strings.Join(classes, " ")
 		if className == "" && !obj.Call("hasAttribute", "class").Bool() {
 			return
 		}
-		obj.Set("className", className)
+		obj.Call("setAttribute", "class", className)
 	})
 
 	return nil
