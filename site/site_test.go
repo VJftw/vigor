@@ -55,6 +55,7 @@ func TestWrite(t *testing.T) {
 		`<html lang="fr">`, `<title>My app</title>`, `content="Does things."`, `href="/app.css"`, `href="/icon.svg"`,
 		`<meta name="theme-color" content="#000">`, `<div id="app">Loading…</div>`,
 		`src="/wasm_exec.js?v=` + version, `fetch("/app.wasm?v=` + version,
+		`document.getElementById("app")`, `"My app" + " couldn't start: "`,
 	} {
 		assert.Contains(t, string(index), want)
 	}
@@ -64,6 +65,37 @@ func TestWrite(t *testing.T) {
 	require.NoError(t, err)
 	got, _ := os.ReadFile(filepath.Join(dir, site.WasmExecFile))
 	assert.Equal(t, loader, got)
+}
+
+// An app can mount into another element and be served from other URLs, as
+// a site with its own layout does.
+func TestIndexOptions(t *testing.T) {
+	index, err := site.Index(site.Options{
+		Title: "vineyard", ID: "root", Loading: `<p class="loading">Loading vineyard…</p>`,
+		WasmURL: "/web/app.wasm", WasmExecURL: "/web/wasm_exec.js",
+	}, "abc123")
+	require.NoError(t, err)
+	for _, want := range []string{
+		`<div id="root"><p class="loading">Loading vineyard…</p></div>`,
+		`src="/web/wasm_exec.js?v=abc123"`, `fetch("/web/app.wasm?v=abc123")`,
+		`document.getElementById("root")`, `"vineyard" + " couldn't start: "`,
+	} {
+		assert.Contains(t, string(index), want)
+	}
+	assert.NotContains(t, string(index), `"/app.wasm`)
+}
+
+// The title ends up in a script: it can't break out of it.
+func TestIndexTitleInScript(t *testing.T) {
+	index, err := site.Index(site.Options{Title: `"; alert(1); "`}, "v")
+	require.NoError(t, err)
+	// Quotes are escaped inside the string, and the script can't be closed.
+	assert.Contains(t, string(index), `"\"; alert(1); \""`)
+	index, err = site.Index(site.Options{Title: `</script><b>`}, "v")
+	require.NoError(t, err)
+	// Only the page's own two scripts end: a title can't close one early.
+	assert.Equal(t, 2, strings.Count(string(index), "</script>"))
+	assert.NotContains(t, string(index), `"</script><b>"`)
 }
 
 func TestWriteDefaultsAndEscaping(t *testing.T) {

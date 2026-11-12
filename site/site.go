@@ -18,6 +18,7 @@ import (
 	"compress/gzip"
 	"context"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"os"
@@ -48,9 +49,16 @@ type Options struct {
 	Icon string
 	// Head is more HTML for the page's <head>: a manifest, meta tags.
 	Head template.HTML
-	// Loading is shown in the app element until the program is running, and
-	// is replaced when it starts rendering; "" for nothing.
-	Loading string
+	// Loading is HTML shown in the app element until the program is running,
+	// and cleared when it starts; "" for nothing. It is trusted.
+	Loading template.HTML
+	// ID is the id of the element the app mounts into; "app" by default (it
+	// is what web.Mount's id argument names).
+	ID string
+	// WasmURL and WasmExecURL are where the program and Go's loader are
+	// served from, if not at "/app.wasm" and "/wasm_exec.js" (where Write
+	// puts them).
+	WasmURL, WasmExecURL string
 }
 
 var page = template.Must(template.New("index").Parse(`<!doctype html>
@@ -63,15 +71,16 @@ var page = template.Must(template.New("index").Parse(`<!doctype html>
 {{end}}{{if .Icon}}<link rel="icon" href="{{.Icon}}">
 {{end}}{{range .Styles}}<link rel="stylesheet" href="{{.}}">
 {{end}}{{.Head}}
-<script src="/{{.WasmExec}}?v={{.Version}}"></script>
+<script src="{{.WasmExecURL}}?v={{.Version}}"></script>
 </head>
 <body>
-<div id="app">{{.Loading}}</div>
+<div id="{{.ID}}">{{.Loading}}</div>
 <script>
 const go = new Go();
-WebAssembly.instantiateStreaming(fetch("/{{.Wasm}}?v={{.Version}}"), go.importObject)
-  .then((result) => { document.getElementById("app").textContent = ""; return go.run(result.instance); })
-  .catch((err) => { document.getElementById("app").textContent = "Couldn't start: " + err; });
+const root = document.getElementById({{.JSID}});
+WebAssembly.instantiateStreaming(fetch({{.JSWasm}}), go.importObject)
+  .then((result) => { root.textContent = ""; return go.run(result.instance); })
+  .catch((err) => { root.textContent = {{.JSTitle}} + " couldn't start: " + err; });
 </script>
 </body>
 </html>
@@ -85,11 +94,28 @@ func Index(opts Options, version string) ([]byte, error) {
 	if opts.Lang == "" {
 		opts.Lang = "en"
 	}
+	if opts.ID == "" {
+		opts.ID = "app"
+	}
+	if opts.WasmURL == "" {
+		opts.WasmURL = "/" + WasmFile
+	}
+	if opts.WasmExecURL == "" {
+		opts.WasmExecURL = "/" + WasmExecFile
+	}
+	// The script's strings: JSON, which is JavaScript, with <, > and & escaped
+	// so that nothing in them can end the script.
+	js := func(v string) template.JS {
+		b, _ := json.Marshal(v)
+
+		return template.JS(b)
+	}
 	var b bytes.Buffer
 	err := page.Execute(&b, struct {
 		Options
-		Version, WasmExec, Wasm string
-	}{opts, version, WasmExecFile, WasmFile})
+		Version               string
+		JSID, JSWasm, JSTitle template.JS
+	}{opts, version, js(opts.ID), js(opts.WasmURL + "?v=" + version), js(opts.Title)})
 
 	return b.Bytes(), err
 }
