@@ -69,7 +69,16 @@ jobs:
           GOARCH: wasm
         # One package at a time: each starts its own Chrome, which can miss its
         # start-up deadline when they compete for a small runner.
-        run: go test -p 1 -exec "$(go env GOPATH)/bin/wasmbrowsertest" ./html/... ./web/...
+        #
+        # Chrome sometimes misses its start-up deadline on a shared runner
+        # ("websocket url timeout reached"), so a failure is tried again; a
+        # test that really fails does so every time.
+        run: |
+          for attempt in 1 2 3; do
+            go test -p 1 -exec "$(go env GOPATH)/bin/wasmbrowsertest" ./html/... ./web/... && exit 0
+            echo "::warning::attempt $attempt failed"
+          done
+          exit 1
 
   features:
     name: Examples
@@ -89,4 +98,11 @@ jobs:
         working-directory: examples/features
         # Each example builds a WebAssembly program and starts Chrome: a few at a
         # time, so the runner is not starved.
-        run: go test -p 2 ./...
+        # A failure is tried again, for Chrome's start-up (see above); passing
+        # packages are cached, so only the failed ones run again.
+        run: |
+          for attempt in 1 2 3; do
+            go test -p 2 ./... && exit 0
+            echo "::warning::attempt $attempt failed"
+          done
+          exit 1
