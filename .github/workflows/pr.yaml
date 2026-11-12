@@ -40,9 +40,10 @@ jobs:
         with:
           go-version-file: go.mod
 
-      # The reactive core and the router's matching need no browser.
+      # The reactive core, the router's matching, and the site tooling need no
+      # browser.
       - name: Go test
-        run: go test -race -cover . ./router
+        run: go test -race -cover . ./router ./site ./cmd/vigor
 
   browser:
     name: Package tests (browser)
