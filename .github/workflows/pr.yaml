@@ -23,7 +23,13 @@ jobs:
       - name: Formatting
         run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
 
-      # The DOM packages only build for the browser.
+      # The DOM packages' files are for the browser only (a DOM file without its
+      # build tag fails here), so every platform builds the packages, which are
+      # empty natively: build systems that build for all of them (Bazel's //...)
+      # work without special cases.
+      - name: Build and vet (native)
+        run: go build ./... && go vet ./...
+
       - name: Build (WebAssembly)
         env:
           GOOS: js

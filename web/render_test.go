@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 package web_test
 
 import (

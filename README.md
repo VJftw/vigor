@@ -84,6 +84,12 @@ value (attributes, classes, styles, text, children) it also accepts a
 The older callback-style API (`CreateSignal`, `CreateEffect`, `Show`, `For`...)
 still works alongside.
 
+The DOM packages (`html`, `web`, `router`) are for the browser: their files
+are tagged `js && wasm`, and natively they are empty packages, so
+`go build ./...`, `go vet ./...` and build systems that build every platform
+(Bazel's `//...`) work without special cases. To edit them with gopls, set
+`GOOS=js GOARCH=wasm` for it (see `.vscode/settings.json`).
+
 Signals are not goroutine-safe; in WebAssembly there is one thread, and
 goroutines that report back (timers, fetches, streams) must use
 `vigor.Dispatch`.
